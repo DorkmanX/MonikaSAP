@@ -1,4 +1,5 @@
 ﻿using MonikaSAP.Services.Interfaces;
+using MonikaSAP.Utilities;
 
 namespace MonikaSAP.Services
 {
@@ -13,6 +14,14 @@ namespace MonikaSAP.Services
         {
             var mainTable = _preprocessingService.PreprocessHierarchyTable(fileName);
             var excelTable = _preprocessingService.PreprocessExcelTable(fileName);
+
+            foreach(var entry in mainTable ) 
+            {
+                if(entry.HierachyLevel == (short)HierarchyLevel.Level1)
+                {
+
+                }
+            }
 
             double result = 0.0;
             return result;

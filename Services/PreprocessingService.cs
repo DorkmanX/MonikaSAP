@@ -78,20 +78,16 @@ namespace MonikaSAP.Services
             int counter = 0;
             for(int i = 1; i < excelWorksheetWithDataType.Count; i++)
             {
-                for(int j = 0;j < excelWorksheetWithDataType[i].Count; j++)
+                excelTableRows.Add(new ExcelTableRow()
                 {
-                    excelTableRows.Add(new ExcelTableRow()
-                    {
-                        Id = ++counter,
-                        NumberOrder = excelWorksheetWithDataType[i][0].Key,
-                        Material = excelWorksheetWithDataType[i][1].Key,
-                        BatchNumber = excelWorksheetWithDataType[i][8].Key,
-                        IndicatorWnMa = excelWorksheetWithDataType[i][9].Key[0],
-                        Cost = Convert.ToDouble(excelWorksheetWithDataType[i][10].Key),
-                        Quantity = Convert.ToDouble(excelWorksheetWithDataType[i][12].Key)
-                    });
-                    Console.WriteLine(excelWorksheetWithDataType[i][9].Key[0]);
-                }
+                    Id = ++counter,
+                    NumberOrder = excelWorksheetWithDataType[i][0].Key,
+                    Material = excelWorksheetWithDataType[i][1].Key,
+                    BatchNumber = excelWorksheetWithDataType[i][8].Key,
+                    IndicatorWnMa = excelWorksheetWithDataType[i][9].Key[0],
+                    Cost = Convert.ToDouble(excelWorksheetWithDataType[i][10].Key),
+                    Quantity = Convert.ToDouble(excelWorksheetWithDataType[i][12].Key)
+                });
             }
             
 
