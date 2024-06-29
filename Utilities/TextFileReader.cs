@@ -7,8 +7,9 @@ namespace MonikaSAP.Utilities
         public static List<string> ReadTextFile(string filePath)
         {
             List<string> fileLines = new List<string>();
+            string fullPath = filePath + ".txt";
 
-            using (StreamReader file = new StreamReader(filePath))
+            using (StreamReader file = new StreamReader(fullPath))
             {
                 int counter = 0;
                 string textLine;

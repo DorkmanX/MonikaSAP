@@ -2,6 +2,6 @@
 {
     public interface IPreprocessingService
     {
-
+        public double CalculateRawMaterialCost(string fileName);
     }
 }

@@ -11,8 +11,9 @@ namespace MonikaSAP.Utilities
         public static List<List<KeyValuePair<string, int>>> ReadExcelFileAsNestedTable(string fileName)
         {
             List<List<KeyValuePair<string,int>>> unformattedDataTable = new List<List<KeyValuePair<string, int>>>();
+            string fullPath = fileName + " R.XLSX";
 
-            using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Open(fileName, false))
+            using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Open(fullPath, false))
             {
                 // Access worksheet data
                 WorkbookPart workbookPart = spreadsheetDocument.WorkbookPart;
