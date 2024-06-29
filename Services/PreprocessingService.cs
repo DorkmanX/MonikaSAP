@@ -19,11 +19,33 @@ namespace MonikaSAP.Services
             List<string> rawFile = TextFileReader.ReadTextFile(fileName);
             rawFile = FilterFile(rawFile);
 
+            short lastHierarchyLevel = 0;
+            short decreaseHierarchyLevel = 0;
+            bool decreaseAllSubOrders = false;
+            bool substituteOneLevel = false;
+
             foreach (string line in rawFile)
             {
                 short hierarchyLevel = CountWhitespacesAtBegin(line);
                 string operationNumber = CutAfterInitialWhitespaceAndDigits(line);
+                if (decreaseHierarchyLevel >= hierarchyLevel)
+                {
+                    substituteOneLevel = false;
+                    decreaseAllSubOrders = false;
+                }
+
+                if (hierarchyLevel > lastHierarchyLevel && hierarchyLevel - lastHierarchyLevel > 1 && !decreaseAllSubOrders)
+                {
+                    decreaseAllSubOrders = true;
+                    substituteOneLevel = true;
+                    decreaseHierarchyLevel = hierarchyLevel;
+                }
+
+                if(substituteOneLevel == true)
+                    hierarchyLevel -= 1;
+
                 hierarchy.Add(new KeyValuePair<string, short>(operationNumber, hierarchyLevel));
+                lastHierarchyLevel = hierarchyLevel;
             }
 
             return hierarchy;

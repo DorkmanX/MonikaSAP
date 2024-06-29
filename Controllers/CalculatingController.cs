@@ -7,12 +7,12 @@ namespace MonikaSAP.Controllers
 {
     [ApiController]
     [Route("api")]
-    public class ImportController : ControllerBase
+    public class CalculatingController : ControllerBase
     {
-        private readonly ILogger<ImportController> _logger;
+        private readonly ILogger<CalculatingController> _logger;
         private readonly IPreprocessingService _preprocessingService;
 
-        public ImportController(ILogger<ImportController> logger,IPreprocessingService service)
+        public CalculatingController(ILogger<CalculatingController> logger,IPreprocessingService service)
         {
             _logger = logger;
             _preprocessingService = service;
