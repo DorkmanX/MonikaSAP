@@ -1,4 +1,5 @@
 ﻿using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Drawing.Charts;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using System;
@@ -24,11 +25,34 @@ namespace MonikaSAP.Utilities
                 foreach (Row row in sheetData.Elements<Row>())
                 {
                     List<KeyValuePair<string, int>> rowData = new List<KeyValuePair<string, int>>();
-                    foreach (Cell cell in row.Elements<Cell>())
+                    IEnumerable<StringValue?> cellReferences = row.Descendants<Cell>().Select(c => c.CellReference);
+                    List<string> cellReferencesConverted = new List<string>();
+
+                    foreach (var item in cellReferences)
                     {
-                        rowData.Add(GetCellValueAndType(spreadsheetDocument, cell));
+                        cellReferencesConverted.Add(Convert.ToString(item));
                     }
-                    unformattedDataTable.Add(rowData);
+                    // Loop through expected cell positions (based on column count)
+                    int cellCount = row.Descendants<Cell>().Count();
+                    for (int colIndex = 1; colIndex <= cellCount; colIndex++)
+                    {
+                        string cellReference = $"A{row.RowIndex}"; // Adjust base column letter if needed
+                        cellReference = cellReference.Replace("A", GetColumnName(colIndex)); // Convert to column letter
+
+                        // Check if cell exists in the row
+                        if (cellReferencesConverted.Contains(cellReference))
+                        {
+                            Cell cell = row.Elements<Cell>().Where(c => c.CellReference == cellReference).FirstOrDefault();
+                            rowData.Add(GetCellValueAndType(spreadsheetDocument, cell));
+                        }
+                        else
+                        {
+                            // Add empty string for missing cell
+                            rowData.Add(new KeyValuePair<string, int>($"empty{row.RowIndex}{colIndex}", -1));
+                        }
+                    }
+                    if(rowData.Count >= 12)
+                        unformattedDataTable.Add(rowData);
                 }
             }
 
@@ -39,7 +63,7 @@ namespace MonikaSAP.Utilities
         {
             // Handle different cell value types
             if (cell.CellValue == null)
-                return new KeyValuePair<string, int>(null, -1);
+                return new KeyValuePair<string, int>("empty", -1);
 
             SharedStringTablePart stringTablePart = document.WorkbookPart.GetPartsOfType<SharedStringTablePart>().FirstOrDefault();
 
@@ -48,6 +72,21 @@ namespace MonikaSAP.Utilities
             
 
             return cell.CellValue.InnerText.Any(character => character == ',') ? new KeyValuePair<string, int>(cell.CellValue.InnerText, (int)DataType.Double) : new KeyValuePair<string, int>(cell.CellValue.InnerText, (int)DataType.Int);
+        }
+
+        private static string GetColumnName(int columnIndex)
+        {
+            int remainder;
+            string columnName = "";
+
+            while (columnIndex > 0)
+            {
+                remainder = (columnIndex - 1) % 26;
+                columnName = (char)(65 + remainder) + columnName; // Convert to A-Z
+                columnIndex = (columnIndex - 1) / 26;
+            }
+
+            return columnName;
         }
     }
 }

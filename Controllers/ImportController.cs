@@ -22,7 +22,9 @@ namespace MonikaSAP.Controllers
         [Route("processSelectedFile")]
         public IActionResult ImportDataFromFileToDB(string fileName = null)
         {
-            double result = _preprocessingService.CalculateRawMaterialCost(fileName);
+            var mainTable = _preprocessingService.PreprocessHierarchyTable(fileName);
+            var excelTable = _preprocessingService.PreprocessExcelTable(fileName);
+
             return Ok();
         }
     }
