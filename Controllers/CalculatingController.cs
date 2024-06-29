@@ -10,22 +10,21 @@ namespace MonikaSAP.Controllers
     public class CalculatingController : ControllerBase
     {
         private readonly ILogger<CalculatingController> _logger;
-        private readonly IPreprocessingService _preprocessingService;
+        private readonly ICalculatingService _calculatingService;
 
-        public CalculatingController(ILogger<CalculatingController> logger,IPreprocessingService service)
+        public CalculatingController(ILogger<CalculatingController> logger, ICalculatingService calculatingService)
         {
             _logger = logger;
-            _preprocessingService = service;
+            _calculatingService = calculatingService;
         }
 
         [HttpGet]
         [Route("processSelectedFile")]
         public IActionResult ImportDataFromFileToDB(string fileName = null)
         {
-            var mainTable = _preprocessingService.PreprocessHierarchyTable(fileName);
-            var excelTable = _preprocessingService.PreprocessExcelTable(fileName);
+            double rawMaterialCost = _calculatingService.CalculateRawMaterialCost(fileName);
 
-            return Ok();
+            return Ok(rawMaterialCost);
         }
     }
 }

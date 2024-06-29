@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<IPreprocessingService,PreprocessingService>();
+builder.Services.AddScoped<ICalculatingService, CalculatingService>();
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.
