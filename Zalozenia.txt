@@ -1,0 +1,8 @@
+Algorytm i jego założenia:
+1. Na poziomie 2 czyli zlecenie 0
+-jeżeli mamy wpis bez H to wliczamy bezpośrednio surowiec użyty do produktu głównego
+-jeżeli mamy indykator S => zapisujemy całkowitą ilość sztuk wykonaną
+
+Pytania:
+-jak głęboko sprawdzać ilość w podzleceniu (obecnie od poziomu 6 wzwyż)
+-upewnić się co to wyznaczania ilości testowych (czy jak nie ma nr partii to olewamy sprawdzanie ilości)

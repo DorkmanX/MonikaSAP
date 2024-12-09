@@ -81,9 +81,9 @@ namespace MonikaSAP.Services
                 excelTableRows.Add(new ExcelTableRow()
                 {
                     Id = ++counter,
-                    NumberOrder = excelWorksheetWithDataType[i][0].Key,
+                    BatchNumber = excelWorksheetWithDataType[i][0].Key,
                     Material = excelWorksheetWithDataType[i][1].Key,
-                    BatchNumber = excelWorksheetWithDataType[i][8].Key,
+                    NumberOrder = excelWorksheetWithDataType[i][8].Key,
                     IndicatorWnMa = excelWorksheetWithDataType[i][9].Key[0],
                     Cost = Convert.ToDouble(excelWorksheetWithDataType[i][10].Key),
                     Quantity = Convert.ToDouble(excelWorksheetWithDataType[i][12].Key)
@@ -101,27 +101,28 @@ namespace MonikaSAP.Services
 
             List<KeyValuePair<string, short>> hierarchyFromTxtFile = PrepareHierarchyFromTextFile(fileName);
 
-            mainTable.Add(new Hierarchy()
+            foreach (var hierarchy in hierarchyFromTxtFile) 
             {
-                Id = ++counter,
-                Number = hierarchyFromTxtFile[0].Key,
-                HierarchyType = (short)HierarchyType.Order,
-                HierachyLevel = hierarchyFromTxtFile[0].Value,
-                ReferenceNumber = null
-            });
-
-            short lastHierarchyLevel = (short)HierarchyLevel.Level1;
-
-            foreach (var hierarchy in hierarchyFromTxtFile.Skip(1)) 
-            {
-                mainTable.Add(new Hierarchy()
+                var newHierarchy = new Hierarchy()
                 {
                     Id = ++counter,
                     Number = hierarchy.Key,
                     HierarchyType = hierarchy.Value % 2 == 0 ? (short)HierarchyType.Batch : (short)HierarchyType.Order, 
                     HierachyLevel = hierarchy.Value,
-                    ReferenceNumber = null
-                });
+                    ReferenceBatchNumber = null,
+                    OverlordSuborderNumber = null
+                };
+
+                //find if batch quantity is done for the first full order, check reference overlord batch
+                if(newHierarchy.HierarchyType == (short)HierarchyType.Batch && hierarchy.Value > (short)HierarchyLevel.Level6)
+                    newHierarchy.ReferenceBatchNumber = mainTable.LastOrDefault(x => x.HierachyLevel == (hierarchy.Value - 2)).Number;
+                
+                //find the whole order number to speed later percentages calculations
+                if(newHierarchy.HierachyLevel > (short)HierarchyLevel.Level5)
+                    newHierarchy.OverlordSuborderNumber = mainTable.LastOrDefault(x => x.HierachyLevel == (short)HierarchyLevel.Level5 
+                    && x.HierarchyType == (short)HierarchyType.Order).Number;
+
+                mainTable.Add(newHierarchy);
             }
 
             return mainTable;

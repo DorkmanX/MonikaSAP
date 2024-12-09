@@ -20,7 +20,7 @@ namespace MonikaSAP.Controllers
 
         [HttpGet]
         [Route("processSelectedFile")]
-        public IActionResult ImportDataFromFileToDB(string fileName = null)
+        public IActionResult ImportDataFromFileToDB(string fileName)
         {
             double rawMaterialCost = _calculatingService.CalculateRawMaterialCost(fileName);
 

@@ -63,7 +63,7 @@ namespace MonikaSAP.Utilities
         {
             // Handle different cell value types
             if (cell.CellValue == null)
-                return new KeyValuePair<string, int>("empty", -1);
+                return new KeyValuePair<string, int>(string.Empty, -1);
 
             SharedStringTablePart stringTablePart = document.WorkbookPart.GetPartsOfType<SharedStringTablePart>().FirstOrDefault();
 
