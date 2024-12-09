@@ -67,7 +67,7 @@ namespace MonikaSAP.Services
                     {
                         if (productEntry.IndicatorWnMa == 'S' || (productEntry.IndicatorWnMa == 'H' && !string.IsNullOrEmpty(productEntry.NumberOrder)))
                         {
-                            allQuantity = Math.Abs(productEntry.Quantity);
+                            allQuantity = allQuantity <= Math.Abs(productEntry.Quantity) ?  Math.Abs(productEntry.Quantity) : allQuantity;
                             continue;
                         }
                         result += productEntry.Cost;
@@ -89,7 +89,7 @@ namespace MonikaSAP.Services
             {
                 result += CalculateSuborderRawMaterial(subOrderNumber.Number, allQuantity, mainTable, excelTable);
             }
-            
+
             return result;
         }
     }
