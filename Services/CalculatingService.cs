@@ -18,14 +18,14 @@ namespace MonikaSAP.Services
         private double CalculateSuborderRawMaterial(string subOrderNumber,double allQuantity,List<Hierarchy> hierarchyTable,List<ExcelTableRow> excelTable,List<History> history)
         {
             var orderEntryFromExcel = excelTable.FirstOrDefault(x => x.NumberOrder == subOrderNumber && x.IndicatorWnMa == 'H');
-            var ratio = CalculateRawMaterialRatio(orderEntryFromExcel.Quantity, allQuantity);
+            var ratio = Math.Round(CalculateRawMaterialRatio(orderEntryFromExcel.Quantity, allQuantity),2);
 
             history.Add(new History()
             {
                 Number = subOrderNumber,
                 Formula = $"{orderEntryFromExcel.Quantity} szt / {allQuantity} szt",
                 Result = ratio * 100,
-                Reason = "Procent do kontynuowania przy segregacji RM w kolejnych podzleceniach"
+                Reason = "Procent do kontynuowania w kolejnych podzleceniach"
             });
 
             var subOrderCost = 0.0;
@@ -34,7 +34,7 @@ namespace MonikaSAP.Services
 
             foreach(var batchHierachyEntry in allSubOrderEntries)
             {
-                var excelDataForBatch = excelTable.Where(x => x.NumberOrder == batchHierachyEntry.Number);
+                var excelDataForBatch = excelTable.Where(x => x.BatchNumber == batchHierachyEntry.Number);
                 if (!excelDataForBatch.Any())
                 {
                     history.Add(new History()
@@ -42,14 +42,14 @@ namespace MonikaSAP.Services
                         Number = batchHierachyEntry.Number,
                         Formula = $"",
                         Result = 0,
-                        Reason = "Zlecenie przerwane ? brak wpisów dla nr zlecenia w pliku excel"
+                        Reason = "Zlecenie przerwane ?"
                     });
                     continue;
                 }
 
                 if(batchHierachyEntry.ReferenceBatchNumber != null)
                 {
-                    var quantityOnOverlordBatch = Math.Abs(excelDataForBatch.FirstOrDefault(x => x.IndicatorWnMa == 'S' && x.BatchNumber == batchHierachyEntry.ReferenceBatchNumber).Quantity);
+                    var quantityOnOverlordBatch = Math.Abs(excelTable.FirstOrDefault(x => x.IndicatorWnMa == 'S' && x.BatchNumber == batchHierachyEntry.ReferenceBatchNumber).Quantity);
                     var quantityDone = Math.Abs(excelDataForBatch.FirstOrDefault(x => x.IndicatorWnMa == 'S' && x.BatchNumber == batchHierachyEntry.Number).Quantity);
                     if (alreadyDoneQtyOnBatches + quantityDone >= quantityOnOverlordBatch)
                     {
@@ -74,7 +74,7 @@ namespace MonikaSAP.Services
                         {
                             Number = batchHierachyEntry.Number,
                             Formula = $"{excelEntry.Cost}zł * {ratio * 100} %",
-                            Result = excelEntry.Cost * ratio,
+                            Result = Math.Round(excelEntry.Cost * ratio,2),
                             Reason = "Kopiujemy z S dla tego zlecenia % dla wszystkich surówców"
                         });
                     }
@@ -87,7 +87,7 @@ namespace MonikaSAP.Services
                             {
                                 Number = batchHierachyEntry.Number,
                                 Formula = $"{excelEntry.Cost}zł * {ratio * 100} %",
-                                Result = excelEntry.Cost * ratio,
+                                Result = Math.Round(excelEntry.Cost * ratio,2),
                                 Reason = "H i nr partii szukamy czy występuje nr partii i nr materiału - tutaj jest"
                             });
                         }
@@ -97,7 +97,7 @@ namespace MonikaSAP.Services
                             {
                                 Number = batchHierachyEntry.Number,
                                 Formula = $"{excelEntry.Cost}zł * {ratio * 100} %",
-                                Result = excelEntry.Cost * ratio,
+                                Result = Math.Round(excelEntry.Cost * ratio, 2),
                                 Reason = "H i nr partii szukamy czy występuje nr partii i nr materiału - tutaj nie ma ale doliczam bo kazałaś"
                             });
                         }
@@ -135,7 +135,7 @@ namespace MonikaSAP.Services
                         {
                             Number = entry.Number,
                             Formula = $"{productEntry.Cost}zł * 100%",
-                            Result = productEntry.Cost,
+                            Result = Math.Round(productEntry.Cost, 2),
                             Reason = "100% wykorzystane w FG"
                         });
                     }
@@ -152,7 +152,7 @@ namespace MonikaSAP.Services
                             {
                                 Number = entry.Number,
                                 Formula = $"{productEntry.Cost}zł * 100%",
-                                Result = productEntry.Cost,
+                                Result = Math.Round(productEntry.Cost,2),
                                 Reason = "100% wykorzystane w FG"
                             });
                         }
@@ -166,7 +166,7 @@ namespace MonikaSAP.Services
                 result += CalculateSuborderRawMaterial(subOrderNumber.Number, allQuantity, mainTable, excelTable,history);
             }
 
-            return new Response() { History = history, Cost = result };
+            return new Response() { History = history, Cost = Math.Round(result,2) };
         }
     }
 }
