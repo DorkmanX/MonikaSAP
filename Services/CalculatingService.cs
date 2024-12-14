@@ -109,8 +109,9 @@ namespace MonikaSAP.Services
 
         public Response CalculateRawMaterialCost(string fileName)
         {
-            List<Hierarchy> mainTable = _preprocessingService.PreprocessHierarchyTable(fileName);
-            List<ExcelTableRow> excelTable = _preprocessingService.PreprocessExcelTable(fileName);
+            string fullFileName = Directory.GetCurrentDirectory() + $"\\Pliki\\{fileName}";
+            List<Hierarchy> mainTable = _preprocessingService.PreprocessHierarchyTable(fullFileName);
+            List<ExcelTableRow> excelTable = _preprocessingService.PreprocessExcelTable(fullFileName);
             List<History> history = new List<History>();
 
             double result = 0.0;

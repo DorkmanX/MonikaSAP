@@ -10,10 +10,21 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<IPreprocessingService,PreprocessingService>();
 builder.Services.AddScoped<ICalculatingService, CalculatingService>();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("MyCorsPolicy", builder =>
+    {
+        builder.WithOrigins("*")
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
+
 var app = builder.Build();
 // Configure the HTTP request pipeline.
 
-app.UseHttpsRedirection();
+app.UseCors("MyCorsPolicy");
+//app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
