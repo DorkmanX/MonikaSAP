@@ -42,7 +42,7 @@ namespace MonikaSAP.Services
                         Number = batchHierachyEntry.Number,
                         Formula = $"",
                         Result = 0,
-                        Reason = "Zlecenie przerwane ? brak wpisów dla nr zlecenia"
+                        Reason = "Zlecenie przerwane ? brak wpisów dla nr zlecenia w pliku excel"
                     });
                     continue;
                 }
@@ -51,18 +51,57 @@ namespace MonikaSAP.Services
                 {
                     var quantityOnOverlordBatch = Math.Abs(excelDataForBatch.FirstOrDefault(x => x.IndicatorWnMa == 'S' && x.BatchNumber == batchHierachyEntry.ReferenceBatchNumber).Quantity);
                     var quantityDone = Math.Abs(excelDataForBatch.FirstOrDefault(x => x.IndicatorWnMa == 'S' && x.BatchNumber == batchHierachyEntry.Number).Quantity);
-                    if(alreadyDoneQtyOnBatches + quantityDone >= quantityOnOverlordBatch)
+                    if (alreadyDoneQtyOnBatches + quantityDone >= quantityOnOverlordBatch)
+                    {
+                        history.Add(new History()
+                        {
+                            Number = batchHierachyEntry.Number,
+                            Formula = $"{alreadyDoneQtyOnBatches} szt + {quantityDone} szt >= {quantityOnOverlordBatch} szt",
+                            Result = 0,
+                            Reason = $"Cała ilość wykorzystana w zleceniu {batchHierachyEntry.ReferenceBatchNumber} => partia testowa"
+                        });
                         continue;
+                    }
                     else
                         alreadyDoneQtyOnBatches += quantityDone;
                 }
                 foreach(var excelEntry in excelDataForBatch)
                 {
                     if (excelEntry.IndicatorWnMa == 'H' && string.IsNullOrEmpty(excelEntry.NumberOrder))
+                    {
                         subOrderCost += excelEntry.Cost * ratio;
-                    if (excelEntry.IndicatorWnMa == 'H' && !string.IsNullOrEmpty(excelEntry.NumberOrder) && 
-                        (excelTable.Count(x => x.NumberOrder == excelEntry.BatchNumber) > 1 && excelTable.Count(x => x.Material == excelEntry.Material) > 1))
+                        history.Add(new History()
+                        {
+                            Number = batchHierachyEntry.Number,
+                            Formula = $"{excelEntry.Cost}zł * {ratio * 100} %",
+                            Result = excelEntry.Cost * ratio,
+                            Reason = "Kopiujemy z S dla tego zlecenia % dla wszystkich surówców"
+                        });
+                    }
+                    if (excelEntry.IndicatorWnMa == 'H' && !string.IsNullOrEmpty(excelEntry.NumberOrder))
+                    {
                         subOrderCost += excelEntry.Cost * ratio;
+                        if ((excelTable.Count(x => x.NumberOrder == excelEntry.BatchNumber) > 1 && excelTable.Count(x => x.Material == excelEntry.Material) > 1))
+                        {
+                            history.Add(new History()
+                            {
+                                Number = batchHierachyEntry.Number,
+                                Formula = $"{excelEntry.Cost}zł * {ratio * 100} %",
+                                Result = excelEntry.Cost * ratio,
+                                Reason = "H i nr partii szukamy czy występuje nr partii i nr materiału - tutaj jest"
+                            });
+                        }
+                        else
+                        {
+                            history.Add(new History()
+                            {
+                                Number = batchHierachyEntry.Number,
+                                Formula = $"{excelEntry.Cost}zł * {ratio * 100} %",
+                                Result = excelEntry.Cost * ratio,
+                                Reason = "H i nr partii szukamy czy występuje nr partii i nr materiału - tutaj nie ma ale doliczam bo kazałaś"
+                            });
+                        }
+                    }
                 }
             }
             return subOrderCost;
