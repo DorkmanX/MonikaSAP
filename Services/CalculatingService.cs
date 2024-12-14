@@ -1,4 +1,5 @@
-﻿using MonikaSAP.Models;
+﻿using DocumentFormat.OpenXml.Vml.Office;
+using MonikaSAP.Models;
 using MonikaSAP.Services.Interfaces;
 using MonikaSAP.Utilities;
 
@@ -14,10 +15,18 @@ namespace MonikaSAP.Services
 
         private double CalculateRawMaterialRatio(double suborderQuantity,double allQuantity) => suborderQuantity / allQuantity;
 
-        private double CalculateSuborderRawMaterial(string subOrderNumber,double allQuantity,List<Hierarchy> hierarchyTable,List<ExcelTableRow> excelTable)
+        private double CalculateSuborderRawMaterial(string subOrderNumber,double allQuantity,List<Hierarchy> hierarchyTable,List<ExcelTableRow> excelTable,List<History> history)
         {
             var orderEntryFromExcel = excelTable.FirstOrDefault(x => x.NumberOrder == subOrderNumber && x.IndicatorWnMa == 'H');
             var ratio = CalculateRawMaterialRatio(orderEntryFromExcel.Quantity, allQuantity);
+
+            history.Add(new History()
+            {
+                Number = subOrderNumber,
+                Formula = $"{orderEntryFromExcel.Quantity} szt / {allQuantity} szt",
+                Result = ratio * 100,
+                Reason = "Procent do kontynuowania przy segregacji RM w kolejnych podzleceniach"
+            });
 
             var subOrderCost = 0.0;
             var alreadyDoneQtyOnBatches = 0.0;
@@ -26,8 +35,17 @@ namespace MonikaSAP.Services
             foreach(var batchHierachyEntry in allSubOrderEntries)
             {
                 var excelDataForBatch = excelTable.Where(x => x.NumberOrder == batchHierachyEntry.Number);
-                if(!excelDataForBatch.Any())
+                if (!excelDataForBatch.Any())
+                {
+                    history.Add(new History()
+                    {
+                        Number = batchHierachyEntry.Number,
+                        Formula = $"",
+                        Result = 0,
+                        Reason = "Zlecenie przerwane ? brak wpisów dla nr zlecenia"
+                    });
                     continue;
+                }
 
                 if(batchHierachyEntry.ReferenceBatchNumber != null)
                 {
@@ -54,6 +72,8 @@ namespace MonikaSAP.Services
         {
             List<Hierarchy> mainTable = _preprocessingService.PreprocessHierarchyTable(fileName);
             List<ExcelTableRow> excelTable = _preprocessingService.PreprocessExcelTable(fileName);
+            List<History> history = new List<History>();
+
             double result = 0.0;
             double allQuantity = 0.0;
 
@@ -71,6 +91,13 @@ namespace MonikaSAP.Services
                             continue;
                         }
                         result += productEntry.Cost;
+                        history.Add(new History()
+                        {
+                            Number = entry.Number,
+                            Formula = $"{productEntry.Cost}zł * 100%",
+                            Result = productEntry.Cost,
+                            Reason = "100% wykorzystane w FG"
+                        });
                     }
                 } // DONE
                 else if (entry.HierachyLevel == (short)HierarchyLevel.Level4 && entry.HierarchyType == (short)HierarchyType.Batch)
@@ -79,7 +106,16 @@ namespace MonikaSAP.Services
                     foreach (var productEntry in mainProductEntries)
                     {
                         if (productEntry.IndicatorWnMa == 'H' && string.IsNullOrEmpty(productEntry.NumberOrder))
+                        {
                             result += productEntry.Cost;
+                            history.Add(new History()
+                            {
+                                Number = entry.Number,
+                                Formula = $"{productEntry.Cost}zł * 100%",
+                                Result = productEntry.Cost,
+                                Reason = "100% wykorzystane w FG"
+                            });
+                        }
                     }
                 }
             }
