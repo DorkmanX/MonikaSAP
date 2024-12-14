@@ -107,7 +107,7 @@ namespace MonikaSAP.Services
             return subOrderCost;
         }
 
-        public double CalculateRawMaterialCost(string fileName)
+        public Response CalculateRawMaterialCost(string fileName)
         {
             List<Hierarchy> mainTable = _preprocessingService.PreprocessHierarchyTable(fileName);
             List<ExcelTableRow> excelTable = _preprocessingService.PreprocessExcelTable(fileName);
@@ -162,10 +162,10 @@ namespace MonikaSAP.Services
             var mainSubordersNumbers = mainTable.Where(x => x.HierachyLevel == (short)HierarchyLevel.Level5 && x.HierarchyType == (short)HierarchyType.Order);
             foreach(var subOrderNumber in mainSubordersNumbers)
             {
-                result += CalculateSuborderRawMaterial(subOrderNumber.Number, allQuantity, mainTable, excelTable);
+                result += CalculateSuborderRawMaterial(subOrderNumber.Number, allQuantity, mainTable, excelTable,history);
             }
 
-            return result;
+            return new Response() { History = history, Cost = result };
         }
     }
 }

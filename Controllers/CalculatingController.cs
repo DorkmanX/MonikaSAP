@@ -22,9 +22,9 @@ namespace MonikaSAP.Controllers
         [Route("processSelectedFile")]
         public IActionResult ImportDataFromFileToDB(string fileName)
         {
-            double rawMaterialCost = _calculatingService.CalculateRawMaterialCost(fileName);
+            var response = _calculatingService.CalculateRawMaterialCost(fileName);
 
-            return Ok(rawMaterialCost);
+            return Ok(response);
         }
     }
 }

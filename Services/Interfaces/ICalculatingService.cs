@@ -1,7 +1,9 @@
-﻿namespace MonikaSAP.Services.Interfaces
+﻿using MonikaSAP.Models;
+
+namespace MonikaSAP.Services.Interfaces
 {
     public interface ICalculatingService
     {
-        public double CalculateRawMaterialCost(string fileName);
+        public Response CalculateRawMaterialCost(string fileName);
     }
 }
